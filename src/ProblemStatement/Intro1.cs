@@ -9,27 +9,34 @@ using TodoApi.Models;
 
 namespace TodoApi.ProblemStatement1
 {
-    // #1 NotificationService PÉLDA, BEÉGETETT FÜGGŐSÉGEKKEL
-    // A NotificationService több függőséggel rendelkezik (EMailSender, Logger, ContactRepository)
-    // Van egy közvetett függőség is (EmailSender függ a Loggertől)
-    // Két probléma:
-    // 1. Az osztály a függőségeit maga példányosítja
-    // 2. Az osztály a függőségei konkrét típusától függ (nem interfészektől)
-    // Negatív következmények:
-    // * A NotificationService nem tud más EMailSender, Logger és ContactRepository implementációkkal
-    //   működni, rugalmatlanság (laza csatolás hiánya)
-    // * A NotificationService osztály nem unit tesztelhető: ehhez le kellene cserélni az EMailSender, Logger, 
-    //   ContactRepository függőségeket olyanokra, melyek fake (tesztelést segítő) rögzített válaszokat adnak.
-    // * Kellemetlen, hogy a NotificationService-nek a függőségei paramétereit is át kell adni (smtpAddress).
+    // ********************************************************************************
+    // #1 Example phase 1 - service class with wired in dependecies
+    // ********************************************************************************
+    //
+    // NotificationService has multiple dependencies (EMailSender, Logger, ContactRepository)
+    // One indirect dependecy exists as well (EmailSender is dependent on Logger)
+    // Two problems exist:
+    // 1. The class instantiates its dependencies itself
+    // 2. Class depends on the specific type of its dependencies (and not on interfaces, "abstractions")
+    // Drawbacks:
+    // * Rigidity, lack of extensibility. NotificationService (without modification) cannot work with 
+    //   other mailing, logging and contact repository implementations.
+    // * he NotificationService (without modification) cannot be unit tested. This would require replacing
+    //   the EMailSender, Logger and ContactRepository dependencies with variants that provide fixed/expected 
+    //   responses for a given input..
+    // *  In our example we had to provide the smtpAddress parameter to the NotificationService constructor, 
+    //    so that it can forward it to its EMailSender dependency. However, smtpAddress is a parameter
+    //    completely meaningless for NotificationService, it has nothing to do with this piece of information. 
 
 
-    // Teendők kezelésére szolgáló osztály
+    // Class for managing todo items
     public class ToDoService
     {
         const string smtpAddress = "smtp.myserver.com";
 
-        // Megvizsgálja a paraméterként kapott todoItem objektumot, és ha szükséges,
-        // e-mail értesítést küld a teendőről a teendőben szereplő kontakt személynek.
+        // Checks the todoItem object received as a parameter and sends an e-mail
+        // notification about the to-do item to the contact person specified by the
+        // todo item.
         public void SendReminderIfNeeded(TodoItem todoItem)
         {
             if (checkIfTodoReminderIsToBeSent(todoItem))
@@ -49,24 +56,24 @@ namespace TodoApi.ProblemStatement1
         // ...
     }
 
-    // Entitásosztály, egy végrehajtandó feladat adatait zárja egységbe
+    // Entity class, encapsulates information about a todo task
     public class TodoItem
     {
-        // Adatbázis kulcs
+        // Database key
         public long Id { get; set; }
-        // Teendő neve/leírása
+        // Name/description of the task
         public string Name { get; set; }
-        // Jelzi, hogy a teendő elvégésre került-e
+        // Indicates if the task has been completed
         public bool IsComplete { get; set; }
-        // Egy teendőhöz lehetőség van kontakt személy hozzárendelésére:  ha -1, nincs
-        // kontakt személy hozzárendelve, egyébként pedig a kontakt személy azonosítója.
+        // It's possible to assign a contact person to a task: -1 indicated no contact
+        // person is assigned, otherwise the id of the contact person
         public int LinkedContactId { get; set; } = -1;
     }
 
-    // Értesítések küldésére szolgáló osztály
+    // Class for sending notifications
     class NotificationService 
     {
-        // Az osztály függőségei
+        // Dependencies of the class
         EMailSender _emailSender;
         Logger _logger;
         ContactRepository _contactRepository;
@@ -78,8 +85,8 @@ namespace TodoApi.ProblemStatement1
             _contactRepository = new ContactRepository();
         }
 
-        // E-mail értesítést küld az adott azonosítójú kontakt személynek (a contactId
-        // egy kulcs a Contacts táblában)
+        // Sends an email notification to the contact with the given ID 
+        // (contactId is a key in the Contacts table)
         public void SendEmailReminder(int contactId, string todoMessage)
         {
             string emailTo = _contactRepository.GetContactEMailAddress(contactId);
@@ -89,14 +96,14 @@ namespace TodoApi.ProblemStatement1
         }
     }
 
-    // Naplózást támogató osztály
+    // Class supporting logging
     public class Logger
     {
         public void LogInformation(string text) { /* ...*/ }
         public void LogError(string text) { /* ...*/ }
     }
 
-    // E-mail küldésre szolgáló osztály
+    // Class for sending e-mail notifications
     public class EMailSender
     {
         Logger _logger;
@@ -115,7 +122,7 @@ namespace TodoApi.ProblemStatement1
         }
     }
 
-    // Contact-ok perzisztens kezelésére szolgáló osztály
+    // Class for Contact entity persistence
     public class ContactRepository
     {
         public string GetContactEMailAddress(int contactId)

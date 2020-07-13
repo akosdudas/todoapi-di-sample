@@ -1,18 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <ProjectUISubcaption>&gt;= ASP.NET Core 2.1</ProjectUISubcaption>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="ProblemStatement\Intro3.cs" />
+    <None Remove=".gitignore" />
   </ItemGroup>
 
-  <!-- <snippet_Metapackage> -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.5" />
   </ItemGroup>
-  <!-- </snippet_Metapackage> -->
 
 </Project>

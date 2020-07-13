@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -11,18 +8,18 @@ namespace TodoApi.Services
     {
         public void SimpleResolve(IServiceProvider sp)
         {
-            // Mivel az ILogger típushoz a Logger osztályt regisztráltuk,
-            // egy Logger példánnyal tér vissza.
+            // Returns an instance of the Logger class, as we have
+            // registered the Logger implementation type for our ILogger abstraction.
             var logger1 = sp.GetService(typeof(ILogger));
 
-            // A típus generikus paraméterben is megadhatjuk, kényelmesebb, ezt szoktuk  használni.
-            // Ehhez szükség van a Microsoft.Extensions.DependencyInjection névtér using-olására, 
-            // mert ez a GetService forma ott definiált extension methodként.
-            // Mivel az ILogger típushoz a Logger osztályt regisztráltuk,
-            // egy Logger példánnyal tér vissza.
+            // Same as the previous example. The difference is that we have provided
+            // the type as a generic parameter. This is a more convenient approach.
+            // To use this we have to import the Microsoft.Extensions.DependencyInjection 
+            // namespace via the using statement.
+            // Returns an instance of the Logger class, see explanation above.
             var logger2 = sp.GetService<ILogger>();
-            // Míg a GetService null-t ad vissza, ha nem sikerül feloldani a konténer alapján a hivatkozást, 
-            // a GetRequiredService kivételt dob.
+            // GetService returns null if no type mapping is found for the specific type (ILogger)
+            // GetRequiredService throws an exception instead.
             var logger3 = sp.GetRequiredService<ILogger>();
             // ...
         }

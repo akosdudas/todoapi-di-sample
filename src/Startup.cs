@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using TodoApi.Models;
@@ -11,53 +10,55 @@ namespace TodoApi
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            #region Keretrendszer szolgáltatások típusok/regisztrálása
-        
-            // Beregisztrálja a konténerbe a TodoContext DBContext-et TodoContext típusként
-            // , vagyis itt nem használunk interfészt (de az interfész bevezetése itt nem is adna
-            // hozzá semmi pluszt, a TodoContext-et nem akarjuk absztrahálni, ő maga már több
-            // DB providerrel tud dolgozni (pl. memória, MQSQL, stb)
-            services.AddDbContext<TodoContext>(opt => 
+            #region Register framework services
+
+            // Registers TodoContext DBContext into the container with TodoContext as key.
+            // We don't use an interface type as key here (it would not have any benefit). 
+            services.AddDbContext<TodoContext>(opt =>
                 opt.UseInMemoryDatabase("TodoList"));
 
-            // Az Mcv keretrendszer szolgáltatásait regisztrálja be, a Web Api miatt használjuk
-            services.AddMvc()
-                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            // Registers WebApi controllers related services into the container
+            services.AddControllers();
 
             #endregion
 
-            #region Saját szolgáltatások típusok/regisztrálása
+            #region Register our custom services
 
-            // #3.1 SZOLGÁLTATÁSOK BEREGISZTRÁLÁSA
-            // Három különböző módon regisztrálhatunk leképezéseket
-            // * AddSingleton: minden feloldás során ugyanazt az objektumot adja vissza
-            // * AddTransient: minden feloldás során új objektumot ad vissza
-            // * AddScoped: a feloldás során egy hatókörön belül ugyanazt az objektumot adja vissza 
-            //   (Web API esetén adott kérésen belül mindig ugyanazt adja vissza)
+            // #3.1 REGISTER MAPPINGS
+            // We can register mappings three different ways
+            // * AddSingleton: returns the same instance for all resolutions
+            // * AddTransient: returns a different instance for different resolutions
+            // * AddScoped: returns the same instance for the same scope
+            //   (one web api request is served within the context of the same scope)
 
-            // A Logger implementációt ILogger interfészként regisztráljuk be, a példa kedvvért Singleton-ként
-            // Később a konténertől ILogger-t kérve egy Logger objektumot ad vissza
+            // Registers an ILogger->Logger mapping, as singleton.
+            // Later at resolution, we will get a Logger instace when we ask for an ILogger implementation
             services.AddSingleton<ILogger, Logger>();
-            // A NotificationService implementációt INotificationService interfészként regisztráljuk be, a példa
-            // kedvéért tranzens módon.
-            // Később a konténertől INotificationService-t kérve egy NotificationService objektumot ad vissza, 
-            // minden lekérdezésre újat.
+
+            // Registers an INotificationService->NotificationService mapping, as transient.
+            // Later at resolution, we will get a NotificationService instace when we ask for an INotificationService implementation
             services.AddTransient<INotificationService, NotificationService>();
-            // A ContactRepository implementációt IContactRepository interfészként regisztráljuk be, a példa
-            // kedvéért scope-olt módon.
-            // Később a konténertől IContactRepository-t kérve egy ContactRepository objektumot ad vissza, 
-            // egy hatókörön belül (esetünkben egy API kérésen belül) ugyanazt.
+
+            // Registers an IContactRepository->ContactRepository mapping, as scoped.
+            // Later at resolution, we will get a ContactRepository instace when we ask for an IContactRepository implementation
             services.AddScoped<IContactRepository, ContactRepository>();
 
-            // Ez "trükkös", mert az EMailSender második paramétere egy string, az smtp szerver címe,
-            // ezt a resolve (GetServive) nem tudja a string típus alapján feloldani. 
-            // A megoldásunk az, hogy egy lambda kifejezésel megadjuk, hogy kell a resolve során
-            // példányosítani az objektumot. A resolve során a rendszer meghívja a lambdát, sp paraméterben
-            // egy ServiceProvider-t kapunk, aminek a GetRequiredService hívásával szerzünk egy már 
-            // beregisztrált ILogger implementációt. 
-            // A gyakorlatban az smtp szerver címét konfigurációból olvassuk fel, ehhez az "options" 
-            // technikát ajánja az ASP.NET Core, mi ezt a megközelítést nem valósítjuk meg. 
-            services.AddSingleton<IEMailSender, EMailSender>( sp => new EMailSender(sp.GetRequiredService<ILogger>(), "smtp.myserver.com") );
+            /*
+            EMailSender will need to be instantiated by the container when resolving IEMailSender, and the constructor 
+            parameters must be specified appropriately. The logger parameter is completely "OK", and the container can 
+            resolve it based on the ILogger-> Logger container mapping registration. However, there is no way to find out
+            the value of the smtpAddress parameter. To solve this problem, ASP.NET Core proposes an "options" mechanism
+            for the framework, which allows us to retrieve the value from some configuration. Covering the "options" topic 
+            would be a far-reaching thread for us, so for simplification we applied another approach. The AddSingleton 
+            (and other Add ... operations) have an overload in which we can specify a lambda expression. This lambda is 
+            called by the container later at the resolve step (that is, when we ask the container for an IEMailSender 
+            implementation) for each instance. With the help of this lambda we manually create the EMailSender object, 
+            so we have the chance to provide the necessary constructor parameters. In fact, the container is really 
+            "helpful" with us: it provides an IServiceCollection object as the lambda parameter for us (in this example
+            it's called sp), and based on container registrations we can conveniently resolve types with the help of 
+            the already covered GetRequiredService and GetService calls.
+            */
+            services.AddSingleton<IEMailSender, EMailSender>(sp => new EMailSender(sp.GetRequiredService<ILogger>(), "smtp.myserver.com"));
 
             #endregion
         }
@@ -66,15 +67,13 @@ namespace TodoApi
         {
             app.UseDefaultFiles(); // Required for the UI part
             app.UseStaticFiles();  // Required for the UI part
-            app.UseMvc();
+            app.UseRouting().UseEndpoints(e => e.MapControllers()); // Required for WebAPI controllers.
 
-            // Az IApplicationBuilder.ApplicationServices segítségével itt el tudjuk érni a konténert 
-            // IServiceProvider-ként, a feloldás (resolve) tesztelésére.
+            // With the help of IApplicationBuilder.ApplicationServices we can ask for the container
+            // which we have access to as IServiceProvide, and we can use it to resolve objects.
             // new ServiceProviderDemos().SimpleResolve(app.ApplicationServices);
-            
-            // new ServiceProviderDemos().ObjectGraphResolve(app.ApplicationServices);
 
-            //app.UseMvc();
+            // new ServiceProviderDemos().ObjectGraphResolve(app.ApplicationServices);
         }
     }
 }

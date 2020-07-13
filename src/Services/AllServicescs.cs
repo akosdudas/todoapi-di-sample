@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using TodoApi.Models;
 
 namespace TodoApi.Services
 {
-    // Értesítések küldésére szolgáló osztály
-    class NotificationService: INotificationService
+    // Class for sending notifications
+    class NotificationService : INotificationService
     {
-        // Az osztály függőségei
+        // Dependencies of the class
         IEMailSender _emailSender;
         ILogger _logger;
         IContactRepository _contactRepository;
 
-        public NotificationService(ILogger logger, IEMailSender emailSender, 
+        public NotificationService(ILogger logger, IEMailSender emailSender,
             IContactRepository contactRepository)
         {
             _logger = logger;
@@ -23,8 +19,8 @@ namespace TodoApi.Services
             _contactRepository = contactRepository;
         }
 
-        // E-mail értesítést küld az adott azonosítójú kontakt személynek (a contactId
-        // egy kulcs a Contacts táblában)
+        // Sends an email notification to the contact with the given ID
+        // (contactId is a key in the Contacts table)
         public void SendEmailReminder(int contactId, string todoMessage)
         {
             string emailTo = _contactRepository.GetContactEMailAddress(contactId);
@@ -61,12 +57,14 @@ namespace TodoApi.Services
 
     #region Implementations
 
+    // Class for logging
     public class Logger : ILogger
     {
         public void LogInformation(string text) { Debug.WriteLine("Info - " + text); }
         public void LogError(string text) { Debug.WriteLine("Error - " + text); }
     }
 
+    // Class for sending e-mail
     public class EMailSender : IEMailSender
     {
         ILogger _logger;
@@ -84,24 +82,22 @@ namespace TodoApi.Services
         }
     }
 
-    // Contact-ok perzisztens kezelésére szolgáló osztály
+    // Class for Contact entity persistence
     public class ContactRepository : IContactRepository
     {
         TodoContext _db;
 
-        // A ContactRepository-nek a konstruktorban be tudjuk injektálni a ContactRepository objektumot.
+        // We can inject a TodoContext dependency as constructor parameter
         public ContactRepository(TodoContext db) => _db = db;
 
         public string GetContactEMailAddress(int contactId)
         {
             // TODO implement
-            // Szükség esetén fel tudjuk használni a _db DcContext objektumot
+            // We could use the TodoContext _db; object here
             return "name@gmail.com";
         }
         // ...       
     }
 
     #endregion
-
- 
 }
