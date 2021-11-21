@@ -96,7 +96,7 @@ namespace TodoApi.Services
             // We could use the TodoContext _db; object here
             return "name@gmail.com";
         }
-        // ...       
+        // ...
     }
 
     #endregion

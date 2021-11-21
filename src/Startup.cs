@@ -13,7 +13,7 @@ namespace TodoApi
             #region Register framework services
 
             // Registers TodoContext DBContext into the container with TodoContext as key.
-            // We don't use an interface type as key here (it would not have any benefit). 
+            // We don't use an interface type as key here (it would not have any benefit).
             services.AddDbContext<TodoContext>(opt =>
                 opt.UseInMemoryDatabase("TodoList"));
 
@@ -44,18 +44,18 @@ namespace TodoApi
             services.AddScoped<IContactRepository, ContactRepository>();
 
             /*
-            EMailSender will need to be instantiated by the container when resolving IEMailSender, and the constructor 
-            parameters must be specified appropriately. The logger parameter is completely "OK", and the container can 
+            EMailSender will need to be instantiated by the container when resolving IEMailSender, and the constructor
+            parameters must be specified appropriately. The logger parameter is completely "OK", and the container can
             resolve it based on the ILogger-> Logger container mapping registration. However, there is no way to find out
             the value of the smtpAddress parameter. To solve this problem, ASP.NET Core proposes an "options" mechanism
-            for the framework, which allows us to retrieve the value from some configuration. Covering the "options" topic 
-            would be a far-reaching thread for us, so for simplification we applied another approach. The AddSingleton 
-            (and other Add ... operations) have an overload in which we can specify a lambda expression. This lambda is 
-            called by the container later at the resolve step (that is, when we ask the container for an IEMailSender 
-            implementation) for each instance. With the help of this lambda we manually create the EMailSender object, 
-            so we have the chance to provide the necessary constructor parameters. In fact, the container is really 
+            for the framework, which allows us to retrieve the value from some configuration. Covering the "options" topic
+            would be a far-reaching thread for us, so for simplification we applied another approach. The AddSingleton
+            (and other Add ... operations) have an overload in which we can specify a lambda expression. This lambda is
+            called by the container later at the resolve step (that is, when we ask the container for an IEMailSender
+            implementation) for each instance. With the help of this lambda we manually create the EMailSender object,
+            so we have the chance to provide the necessary constructor parameters. In fact, the container is really
             "helpful" with us: it provides an IServiceCollection object as the lambda parameter for us (in this example
-            it's called sp), and based on container registrations we can conveniently resolve types with the help of 
+            it's called sp), and based on container registrations we can conveniently resolve types with the help of
             the already covered GetRequiredService and GetService calls.
             */
             services.AddSingleton<IEMailSender, EMailSender>(sp => new EMailSender(sp.GetRequiredService<ILogger>(), "smtp.myserver.com"));
@@ -70,7 +70,7 @@ namespace TodoApi
             app.UseRouting().UseEndpoints(e => e.MapControllers()); // Required for WebAPI controllers.
 
             // With the help of IApplicationBuilder.ApplicationServices we can ask for the container
-            // which we have access to as IServiceProvide, and we can use it to resolve objects.
+            // which we have access to as IServiceProvider, and we can use it to resolve objects.
             // new ServiceProviderDemos().SimpleResolve(app.ApplicationServices);
 
             // new ServiceProviderDemos().ObjectGraphResolve(app.ApplicationServices);

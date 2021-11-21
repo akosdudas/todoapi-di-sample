@@ -14,7 +14,7 @@ namespace TodoApi.Services
 
             // Same as the previous example. The difference is that we have provided
             // the type as a generic parameter. This is a more convenient approach.
-            // To use this we have to import the Microsoft.Extensions.DependencyInjection 
+            // To use this we have to import the Microsoft.Extensions.DependencyInjection
             // namespace via the using statement.
             // Returns an instance of the Logger class, see explanation above.
             var logger2 = sp.GetService<ILogger>();

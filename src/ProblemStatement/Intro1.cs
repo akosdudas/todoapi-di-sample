@@ -14,19 +14,19 @@ namespace TodoApi.ProblemStatement1
     // ********************************************************************************
     //
     // NotificationService has multiple dependencies (EMailSender, Logger, ContactRepository)
-    // One indirect dependecy exists as well (EmailSender is dependent on Logger)
+    // One indirect dependency exists as well (EmailSender is dependent on Logger)
     // Two problems exist:
     // 1. The class instantiates its dependencies itself
     // 2. Class depends on the specific type of its dependencies (and not on interfaces, "abstractions")
     // Drawbacks:
-    // * Rigidity, lack of extensibility. NotificationService (without modification) cannot work with 
+    // * Rigidity, lack of extensibility. NotificationService (without modification) cannot work with
     //   other mailing, logging and contact repository implementations.
     // * he NotificationService (without modification) cannot be unit tested. This would require replacing
-    //   the EMailSender, Logger and ContactRepository dependencies with variants that provide fixed/expected 
+    //   the EMailSender, Logger and ContactRepository dependencies with variants that provide fixed/expected
     //   responses for a given input..
-    // *  In our example we had to provide the smtpAddress parameter to the NotificationService constructor, 
+    // *  In our example we had to provide the smtpAddress parameter to the NotificationService constructor,
     //    so that it can forward it to its EMailSender dependency. However, smtpAddress is a parameter
-    //    completely meaningless for NotificationService, it has nothing to do with this piece of information. 
+    //    completely meaningless for NotificationService, it has nothing to do with this piece of information.
 
 
     // Class for managing todo items
@@ -40,7 +40,7 @@ namespace TodoApi.ProblemStatement1
         public void SendReminderIfNeeded(TodoItem todoItem)
         {
             if (checkIfTodoReminderIsToBeSent(todoItem))
-            { 
+            {
                 NotificationService notificationService = new NotificationService(smtpAddress);
                 notificationService.SendEmailReminder(todoItem.LinkedContactId, todoItem.Name);
             }
@@ -48,7 +48,7 @@ namespace TodoApi.ProblemStatement1
 
         bool checkIfTodoReminderIsToBeSent(TodoItem todoItem)
         {
-            bool send = true; 
+            bool send = true;
             /* ... */
             return send;
         }
@@ -71,7 +71,7 @@ namespace TodoApi.ProblemStatement1
     }
 
     // Class for sending notifications
-    class NotificationService 
+    class NotificationService
     {
         // Dependencies of the class
         EMailSender _emailSender;
@@ -85,7 +85,7 @@ namespace TodoApi.ProblemStatement1
             _contactRepository = new ContactRepository();
         }
 
-        // Sends an email notification to the contact with the given ID 
+        // Sends an email notification to the contact with the given ID
         // (contactId is a key in the Contacts table)
         public void SendEmailReminder(int contactId, string todoMessage)
         {

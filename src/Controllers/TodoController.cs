@@ -10,16 +10,16 @@ namespace TodoApi.Controllers
     // # Example phase 3 - dependency injection based on .NET Core Dependency Injection
     // ********************************************************************************
 
-    /* 
-    In our example TodoController is the "root object", it's resolved by the framework 
+    /*
+    In our example TodoController is the "root object", it's resolved by the framework
     the a Web API call is received with a call to serviceProvider.GetService<TodoController>().
     This call is hidden from us, it's handled by the framework pipeline. How is the
     object graph created during this resolve step? The GetService call resolves all
     direct and indirect dependencies of TodoController, recursively. It does so by checking
     the constructor parameters of TodoController:
-    * TodoContext context: a TodoContext is created based on the TodoContext->TodoContext 
+    * TodoContext context: a TodoContext is created based on the TodoContext->TodoContext
       mapping registration (scoped).
-    * INotificationService notificationService: a NotificationService instance is returned based on the 
+    * INotificationService notificationService: a NotificationService instance is returned based on the
       INotificationService->NotificationService  mapping registration. This has three constructor
       parameters, these are also resolved based in the container type registrations:
       * ILogger logger: Logger (singleton)
@@ -56,7 +56,7 @@ namespace TodoApi.Controllers
         // API call handling function for sending an e-mail notification
         // Example for use: a http post request to this url (e.g. via using PostMan):
         //     http://localhost:5000/api/todo/2/reminder
-        // , which sends an e-mail notif to the e-mail address appointed of the 
+        // , which sends an e-mail notif to the e-mail address appointed of the
         // contact person referenced by the todo item.
         [HttpPost("{id}/reminder")]
         public IActionResult ReminderMessageToLinkedContact(long id)
