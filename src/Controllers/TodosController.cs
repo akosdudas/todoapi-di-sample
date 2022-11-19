@@ -32,14 +32,14 @@ namespace TodoApi.Controllers
     */
     [Route("api/[controller]")]
     [ApiController]
-    public class TodoController : ControllerBase
+    public class TodosController : ControllerBase
     {
         // The dependencies of TodoController
         private readonly TodoContext _context; // This is a DbContext
         private readonly INotificationService _notificationService;
 
         // Dependencies are received as constructor parameters
-        public TodoController(TodoContext context, INotificationService notificationService)
+        public TodosController(TodoContext context, INotificationService notificationService)
         {
             _context = context;
             _notificationService = notificationService;
