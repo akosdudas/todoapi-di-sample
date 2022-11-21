@@ -25,15 +25,15 @@ builder.Services.AddControllers();
 //   (one web api request is served within the context of the same scope)
 
 // Registers an ILogger->Logger mapping, as singleton.
-// Later at resolution, we will get a Logger instace when we ask for an ILogger implementation
+// Later at resolution, we will get a Logger instance when we ask for an ILogger implementation
 builder.Services.AddSingleton<ILogger, Logger>();
 
 // Registers an INotificationService->NotificationService mapping, as transient.
-// Later at resolution, we will get a NotificationService instace when we ask for an INotificationService implementation
+// Later at resolution, we will get a NotificationService instance when we ask for an INotificationService implementation
 builder.Services.AddTransient<INotificationService, NotificationService>();
 
 // Registers an IContactRepository->ContactRepository mapping, as scoped.
-// Later at resolution, we will get a ContactRepository instace when we ask for an IContactRepository implementation
+// Later at resolution, we will get a ContactRepository instance when we ask for an IContactRepository implementation
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
 
 /*
